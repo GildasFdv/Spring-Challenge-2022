@@ -12,52 +12,52 @@ class Party
     /*__________________________CONSTANTES________________________*/
     /*____________________________________________________________*/
 
-    public const int TYPE_MONSTER = 0;
-    public const int TYPE_MY_HERO = 1;
-    public const int TYPE_OP_HERO = 2;
+    private const int TYPE_MONSTER = 0;
+    private const int TYPE_MY_HERO = 1;
+    private const int TYPE_OP_HERO = 2;
 
-    public const int THREAT_FOR_ME = 1;
-    public const int THREAT_FOR_OPP = 2;
+    private const int THREAT_FOR_ME = 1;
+    private const int THREAT_FOR_OPP = 2;
 
-    public const int MY_HERO1 = 0;
-    public const int MY_HERO2 = 1;
-    public const int MY_HERO3 = 2;
+    private const int MY_HERO1 = 0;
+    private const int MY_HERO2 = 1;
+    private const int MY_HERO3 = 2;
 
     private const int MIDDLE_MAGNITUDE = 9897;
 
-    public static int EXPLORATION_MAGNITUDE = 8200;
-    public const double PIXEL_SCOPE = 2200;
-    public static double RADIAN_SCOPE = Math.Asin(PIXEL_SCOPE / EXPLORATION_MAGNITUDE);
-    public const double HERO_SPEED = 800;
+    private static int EXPLORATION_MAGNITUDE = 8200;
+    private const double PIXEL_SCOPE = 2200;
+    private static double RADIAN_SCOPE = Math.Asin(PIXEL_SCOPE / EXPLORATION_MAGNITUDE);
+    private const double HERO_SPEED = 800;
 
-    public const int ATTACK_TURN = 90;
+    private const int ATTACK_TURN = 90;
 
     /*____________________________________________________________*/
     /*__________________________ATTRIBUTS_________________________*/
     /*____________________________________________________________*/
 
-    static protected int MyMana { get; set; }
-    static protected int MyHealth;
-    static protected int OppMana;
-    static protected int OppHealth;
-    static protected int Turn { get; set; }
-    static protected bool OpponentUseControlOnMyDefenders { get; set; }
-    static protected Complex MyBase { get; set; }
-    static protected Complex OppBase { get; set; }
+    static private int MyMana { get; set; }
+    static private int MyHealth;
+    static private int OppMana;
+    static private int OppHealth;
+    static private int Turn { get; set; }
+    static private bool OpponentUseControlOnMyDefenders { get; set; }
+    static private Complex MyBase { get; set; }
+    static private Complex OppBase { get; set; }
 
-    static protected List<Monster>? Monsters;
-    static protected List<MyHero>? MyHeroes;
-    static protected List<OppHero>? OppHeroes;
+    static private List<Monster>? Monsters;
+    static private List<MyHero>? MyHeroes;
+    static private List<OppHero>? OppHeroes;
 
-    static protected List<int?>? UrgentTargetRoutes;
+    static private List<int?>? UrgentTargetRoutes;
 
-    static protected int LastUrgentTargetUpdate = 0;
+    static private int LastUrgentTargetUpdate = 0;
 
     /*____________________________________________________________*/
     /*___________________________METHODES_________________________*/
     /*____________________________________________________________*/
 
-    public static void AddTurn()
+    private static void AddTurn()
     {
         Party.Turn++;
 
@@ -67,13 +67,13 @@ class Party
         }
     }
 
-    public static void UpdateExplorationMagnitude(int explorationMagnitude)
+    private static void UpdateExplorationMagnitude(int explorationMagnitude)
     {
         EXPLORATION_MAGNITUDE = explorationMagnitude;
         RADIAN_SCOPE = Math.Asin(PIXEL_SCOPE / EXPLORATION_MAGNITUDE);
     }
 
-    public static void UpdateDenfenseTargetList()
+    private static void UpdateDenfenseTargetList()
     {
         for (int i = 0; i < Party.Monsters!.Count; i++)
         {
@@ -87,7 +87,7 @@ class Party
         Party.Monsters.Sort();
     }
 
-    public static void UpdateUrgentTarget()
+    private static void UpdateUrgentTarget()
     {
         Party.UpdateDenfenseTargetList();
 
@@ -122,7 +122,7 @@ class Party
         }
     }
 
-    public static int? GetUrgentTarget(int hero)
+    private static int? GetUrgentTarget(int hero)
     {
         if (Party.LastUrgentTargetUpdate != Party.Turn)
         {
@@ -142,7 +142,7 @@ class Party
         public int Id;
         public Complex Position { get; set; }
         public int ShieldLife;
-        public bool IsControlled;
+        protected bool IsControlled;
 
         public Entity(int id, Complex position, int shieldLife, bool isControlled)
         {
@@ -152,12 +152,12 @@ class Party
             this.IsControlled = isControlled;
         }
 
-        public int DistanceTo(Entity entity)
+        protected int DistanceTo(Entity entity)
         {
             return (int)Complex.Subtract(this.Position, entity.Position).Magnitude;
         }
 
-        public int DistanceTo(Complex position)
+        protected int DistanceTo(Complex position)
         {
             return (int)Complex.Subtract(this.Position, position).Magnitude;
         }
@@ -172,7 +172,7 @@ class Party
         public int Health { get; }
         public double DistanceToMyBase { get; }
         public double DistanceToOppenentBase { get; }
-        private int ThreatFor;
+        private readonly int ThreatFor;
 
         public Monster(int id, Complex position, int shieldLife, bool isControlled, int health, int threatFor) : base(id, position, shieldLife, isControlled)
         {
@@ -248,12 +248,13 @@ class Party
 
     public abstract class MyHero : Entity
     {
-        public Complex AlterVector { get; set; }
+        protected Complex AlterVector { get; set; }
 
         public MyHero(int id, Complex position, int shieldLife, bool isControlled) : base(id, position, shieldLife, isControlled)
         {
 
         }
+
         public virtual void Update(Complex position, int shieldLife, bool isControlled)
         {
             this.Position = position;
@@ -262,6 +263,7 @@ class Party
         }
 
         public abstract void Action();
+
         protected void GoTo(Complex position)
         {
             Console.WriteLine($"MOVE {(int)position.Real} {(int)position.Imaginary}");
@@ -317,7 +319,7 @@ class Party
 
         protected bool MustDefenseWind(int target)
         {
-            return (Party.Monsters![target].ShieldLife == 0 && Party.Monsters[target].DistanceTo(this) <= 1280 && Party.MyMana >= 10 &&
+            return (Party.Monsters![target].ShieldLife == 0 && this.DistanceTo(Party.Monsters[target]) <= 1280 && Party.MyMana >= 10 &&
                     (Party.Monsters[target].DistanceToMyBase < 1100
                     || (Party.Monsters[target].DistanceToMyBase < 2600 && Party.Monsters[target].CanBeWinded())
                     || (Party.Turn > 90 && Party.Monsters[target].DistanceToMyBase <= 5000)));
@@ -340,11 +342,11 @@ class Party
     public class MyHero1 : MyHero
     {
         private double PhaseShift;
-        private int AttackExplorationMagnitude;
-        private double MinPhase;
-        private double MaxPhase;
+        private readonly int AttackExplorationMagnitude;
+        private readonly double MinPhase;
+        private readonly double MaxPhase;
         private bool MustJoinShieldPoint;
-        private double ShieldPointPhase;
+        private readonly double ShieldPointPhase;
 
         public MyHero1(int id, Complex position, int shieldLife, bool isControlled) : base(id, position, shieldLife, isControlled)
         {
