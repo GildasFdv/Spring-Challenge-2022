@@ -32,10 +32,7 @@ class Party
     public static int EXPLORATION_MAGNITUDE = 8200;
     public const double PIXEL_SCOPE = 2200;
     public static double RADIAN_SCOPE = Math.Asin(PIXEL_SCOPE / EXPLORATION_MAGNITUDE);
-    public static double EXPLORATION_PHASE_SHIFT = 2 * Math.Asin((HERO_SPEED / 2) / EXPLORATION_MAGNITUDE);
     public const double HERO_SPEED = 800;
-    public static double EXPLORATION_RADIAN_WIDTH = Math.PI / 2 - 2 * RADIAN_SCOPE;
-    public static double EXPLORATOIN_THIRD_RADIAN_WIDTH = EXPLORATION_RADIAN_WIDTH / 3;
 
     public const int ATTACK_TURN = 90;
 
@@ -44,11 +41,11 @@ class Party
     /*____________________________________________________________*/
 
     static protected int MyMana { get; set; }
-    static protected int MyHealth { get; set; }
-    static protected int OppMana { get; set; }
-    static protected int OppHealth { get; set; }
+    static protected int MyHealth;
+    static protected int OppMana;
+    static protected int OppHealth;
     static protected int Turn { get; set; }
-    static protected bool OpponentUseControlOnMyDenfenders { get; set; }
+    static protected bool OpponentUseControlOnMyDefenders { get; set; }
     static protected Complex MyBase { get; set; }
     static protected Complex OppBase { get; set; }
 
@@ -56,7 +53,7 @@ class Party
     static protected List<MyHero>? MyHeroes;
     static protected List<OppHero>? OppHeroes;
 
-    static protected List<int?>? UrgentTargetRoute;
+    static protected List<int?>? UrgentTargetRoutes;
 
     static protected int LastUrgentTargetUpdate = 0;
 
@@ -64,7 +61,7 @@ class Party
     /*___________________________METHODES_________________________*/
     /*____________________________________________________________*/
 
-    public void AddTurn()
+    public static void AddTurn()
     {
         Party.Turn++;
 
@@ -78,9 +75,6 @@ class Party
     {
         EXPLORATION_MAGNITUDE = explorationMagnitude;
         RADIAN_SCOPE = Math.Asin(PIXEL_SCOPE / EXPLORATION_MAGNITUDE);
-        EXPLORATION_PHASE_SHIFT = 2 * Math.Asin((HERO_SPEED / 2) / EXPLORATION_MAGNITUDE);
-        EXPLORATION_RADIAN_WIDTH = Math.PI / 2 - 2 * RADIAN_SCOPE;
-        EXPLORATOIN_THIRD_RADIAN_WIDTH = EXPLORATION_RADIAN_WIDTH / 3;
     }
 
     public static void UpdateDenfenseTargetList()
@@ -101,18 +95,9 @@ class Party
     {
         Party.UpdateDenfenseTargetList();
 
-        Party.UrgentTargetRoute = new List<int?> { null, null, null };
+        Party.UrgentTargetRoutes = new List<int?> { null, null, null };
 
-        List<int> freeHeroes;
-
-        if (Party.Turn > ATTACK_TURN)
-        {
-            freeHeroes = new List<int> { 1, 2 };
-        }
-        else
-        {
-            freeHeroes = new List<int> { 0, 1, 2 };
-        }
+        List<int> freeHeroes = Party.Turn > ATTACK_TURN ? new List<int> { 1, 2 } : new List<int> { 0, 1, 2 };
 
         for (int i = 0; i < Party.Monsters.Count && i < 3 && Party.Monsters[i].DistanceToMyBase < 7200; i++)
         {
@@ -120,7 +105,7 @@ class Party
 
             if (nearestHero != null)
             {
-                Party.UrgentTargetRoute[(int)nearestHero] = i;
+                Party.UrgentTargetRoutes[(int)nearestHero] = i;
 
                 freeHeroes.RemoveAt(freeHeroes.IndexOf((int)nearestHero));
             }
@@ -131,7 +116,7 @@ class Party
 
                 if (secondNearestHero != null)
                 {
-                    Party.UrgentTargetRoute[(int)secondNearestHero] = i;
+                    Party.UrgentTargetRoutes[(int)secondNearestHero] = i;
 
                     freeHeroes.RemoveAt(freeHeroes.IndexOf((int)secondNearestHero));
 
@@ -149,7 +134,7 @@ class Party
             Party.LastUrgentTargetUpdate = Party.Turn;
         }
 
-        return Party.UrgentTargetRoute[hero];
+        return Party.UrgentTargetRoutes[hero];
     }
 
     /*____________________________________________________________*/
@@ -307,12 +292,6 @@ class Party
             Party.MyMana -= 10;
         }
 
-        protected void WindTo(Complex position)
-        {
-            Complex relativeDirection = Complex.Add(this.Position, position);
-            this.Wind(relativeDirection);
-        }
-
         protected void GoTo(Monster monster)
         {
             this.GoTo(monster.Position);
@@ -346,6 +325,15 @@ class Party
                     (Party.Monsters[target].DistanceToMyBase < 1100
                     || (Party.Monsters[target].DistanceToMyBase < 2600 && Party.Monsters[target].CanBeWinded())
                     || (Party.Turn > 90 && Party.Monsters[target].DistanceToMyBase <= 5000)));
+        }
+
+        protected Complex GetDefenseWindVector(int target)
+        {
+            Complex windVector = Complex.Subtract(Party.Monsters![target].Position, Party.MyBase);
+            windVector = Complex.FromPolarCoordinates(2200, windVector.Phase);
+            windVector = Complex.Add(this.Position, windVector);
+
+            return windVector;
         }
     }
 
@@ -446,8 +434,8 @@ class Party
             {
                 if (this.MustDefenseWind((int)urgentTarget))
                 {
-                    //!!! optimiser
-                    this.Wind(Party.OppBase);
+                    Complex windVector = this.GetDefenseWindVector((int)urgentTarget);
+                    this.Wind(windVector);
                 }
                 else
                 {
@@ -578,15 +566,16 @@ class Party
                 this.AlterVector = Complex.FromPolarCoordinates(EXPLORATION_MAGNITUDE, -Math.PI + RADIAN_SCOPE);
             }
         }
+
         public override void Update(Complex position, int shieldLife, bool isControlled)
         {
             this.Position = position;
             this.ShieldLife = shieldLife;
             this.IsControlled = isControlled;
 
-            if (Party.Turn > ATTACK_TURN && !Party.OpponentUseControlOnMyDenfenders && this.IsControlled)
+            if (Party.Turn > ATTACK_TURN && !Party.OpponentUseControlOnMyDefenders && this.IsControlled)
             {
-                Party.OpponentUseControlOnMyDenfenders = true;
+                Party.OpponentUseControlOnMyDefenders = true;
             }
         }
 
@@ -594,12 +583,16 @@ class Party
         {
             int? urgentTarget = Party.GetUrgentTarget(MY_HERO2);
 
-            if (urgentTarget != null)
+            if (MustShieldMe())
+            {
+                this.Shield(this.Id);
+            }
+            else if (urgentTarget != null)
             {
                 if (this.MustDefenseWind((int)urgentTarget))
                 {
-                    //!!! optimiser
-                    this.Wind(Party.OppBase);
+                    Complex windVector = this.GetDefenseWindVector((int)urgentTarget);
+                    this.Wind(windVector);
                 }
                 else
                 {
@@ -619,6 +612,11 @@ class Party
                     this.DefenseExplore();
                 }
             }
+        }
+
+        private bool MustShieldMe()
+        {
+            return Party.OpponentUseControlOnMyDefenders && this.ShieldLife <= 1;
         }
     }
 
@@ -640,15 +638,32 @@ class Party
             }
         }
 
+        public override void Update(Complex position, int shieldLife, bool isControlled)
+        {
+            this.Position = position;
+            this.ShieldLife = shieldLife;
+            this.IsControlled = isControlled;
+
+            if (Party.Turn > ATTACK_TURN && !Party.OpponentUseControlOnMyDefenders && this.IsControlled)
+            {
+                Party.OpponentUseControlOnMyDefenders = true;
+            }
+        }
+
         public override void Action()
         {
             int? urgentTarget = Party.GetUrgentTarget(MY_HERO3);
 
-            if (urgentTarget != null)
+            if (MustShieldMe())
+            {
+                this.Shield(this.Id);
+            }
+            else if (urgentTarget != null)
             {
                 if (this.MustDefenseWind((int)urgentTarget))
                 {
-                    this.Wind(Party.OppBase);
+                    Complex windVector = this.GetDefenseWindVector((int)urgentTarget);
+                    this.Wind(windVector);
                 }
                 else
                 {
@@ -668,6 +683,11 @@ class Party
                     this.DefenseExplore();
                 }
             }
+        }
+
+        private bool MustShieldMe()
+        {
+            return Party.OpponentUseControlOnMyDefenders && this.ShieldLife <= 1;
         }
     }
 
@@ -708,14 +728,12 @@ class Party
         int heroesPerPlayer = int.Parse(Console.ReadLine());
 
         Party.MyHeroes = new List<MyHero>(heroesPerPlayer);
-
-        //init party
         Party.Turn = 0;
 
         // game loop
         while (true)
         {
-            Party.Turn++;
+            Party.AddTurn();
 
             inputs = Console.ReadLine().Split(' ');
             Party.MyHealth = int.Parse(inputs[0]);
@@ -730,13 +748,13 @@ class Party
             Party.OppHeroes = new List<OppHero>(entityCount);
             Party.Monsters = new List<Monster>(entityCount);
 
-            int hero = 0;
+            int heroIndex = 0;
 
             for (int i = 0; i < entityCount; i++)
             {
                 inputs = Console.ReadLine().Split(' ');
                 int id = int.Parse(inputs[0]); // Unique identifier
-                int type = int.Parse(inputs[1]); // 0=monster, 1=your hero, 2=opponent hero
+                int type = int.Parse(inputs[1]); // 0=monster, 1=your heroIndex, 2=opponent heroIndex
                 int x = int.Parse(inputs[2]); // Position of this entity
                 int y = int.Parse(inputs[3]);
                 int shieldLife = int.Parse(inputs[4]); // Ignore for this league; Count down until shield spell fades
@@ -756,11 +774,11 @@ class Party
 
                         if (Party.Turn != 1)
                         {
-                            Party.MyHeroes[hero].Update(new Complex(x, y), shieldLife, (isControlled == 1));
+                            Party.MyHeroes[heroIndex].Update(new Complex(x, y), shieldLife, (isControlled == 1));
                         }
                         else
                         {
-                            switch (hero)
+                            switch (heroIndex)
                             {
                                 case MY_HERO1:
                                     Party.MyHeroes.Add(new MyHero1(id, new Complex(x, y), shieldLife, (isControlled == 1)));
@@ -774,7 +792,7 @@ class Party
                             }
                         }
 
-                        hero++;
+                        heroIndex++;
 
                         break;
                     case TYPE_OP_HERO:
