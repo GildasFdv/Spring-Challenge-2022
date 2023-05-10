@@ -6,10 +6,6 @@ using System.Runtime.CompilerServices;
 using System.Xml.Serialization;
 using static Party;
 
-/**
- * Auto-generated code below aims at helping you parse
- * the standard input according to the problem statement.
- **/
 class Party
 {
     /*____________________________________________________________*/
@@ -79,7 +75,7 @@ class Party
 
     public static void UpdateDenfenseTargetList()
     {
-        for (int i = 0; i < Party.Monsters.Count; i++)
+        for (int i = 0; i < Party.Monsters!.Count; i++)
         {
             if (Party.Monsters[i].IsThreatForOppenent())
             {
@@ -99,7 +95,7 @@ class Party
 
         List<int> freeHeroes = Party.Turn > ATTACK_TURN ? new List<int> { 1, 2 } : new List<int> { 0, 1, 2 };
 
-        for (int i = 0; i < Party.Monsters.Count && i < 3 && Party.Monsters[i].DistanceToMyBase < 7200; i++)
+        for (int i = 0; i < Party.Monsters!.Count && i < 3 && Party.Monsters[i].DistanceToMyBase < 7200; i++)
         {
             int? nearestHero = Party.Monsters[i].GetNearestHeroInTheList(freeHeroes);
 
@@ -134,7 +130,7 @@ class Party
             Party.LastUrgentTargetUpdate = Party.Turn;
         }
 
-        return Party.UrgentTargetRoutes[hero];
+        return Party.UrgentTargetRoutes![hero];
     }
 
     /*____________________________________________________________*/
@@ -198,7 +194,7 @@ class Party
 
         public int CompareTo(object? obj)
         {
-            if ((this.IsThreatForMe() && !((Monster)obj).IsThreatForMe()) || this.DistanceToMyBase < ((Monster)obj).DistanceToMyBase)
+            if ((this.IsThreatForMe() && !((Monster)obj!).IsThreatForMe()) || this.DistanceToMyBase < ((Monster)obj!).DistanceToMyBase)
             {
                 return -1;
             }
@@ -220,7 +216,7 @@ class Party
 
                 for (int i = 1; i < heroesIndex.Count; i++)
                 {
-                    if (this.DistanceTo(Party.MyHeroes[heroesIndex[i]]) < this.DistanceTo(Party.MyHeroes[heroesIndex[nearestHeroIndex]]))
+                    if (this.DistanceTo(Party.MyHeroes![heroesIndex[i]]) < this.DistanceTo(Party.MyHeroes[heroesIndex[nearestHeroIndex]]))
                     {
                         nearestHeroIndex = heroesIndex[i];
                     }
@@ -234,7 +230,7 @@ class Party
 
         public bool CanBeWinded()
         {
-            foreach (OppHero oppHero in Party.OppHeroes)
+            foreach (OppHero oppHero in Party.OppHeroes!)
             {
                 if (this.DistanceTo(oppHero) <= 1280 + 400)
                 {
@@ -306,7 +302,7 @@ class Party
 
         protected int? GetTargetInScope()
         {
-            for (int i = 0; i < Party.Monsters.Count; i++)
+            for (int i = 0; i < Party.Monsters!.Count; i++)
             {
                 double relativePhase = Complex.Subtract(Party.Monsters[i].Position, Party.MyBase).Phase;
 
@@ -439,7 +435,7 @@ class Party
                 }
                 else
                 {
-                    this.GoTo(Party.Monsters[(int)urgentTarget]);
+                    this.GoTo(Party.Monsters![(int)urgentTarget]);
                 }
             }
             else
@@ -448,7 +444,7 @@ class Party
 
                 if (targetInMyScope != null)
                 {
-                    this.GoTo(Party.Monsters[(int)targetInMyScope]);
+                    this.GoTo(Party.Monsters![(int)targetInMyScope]);
                 }
                 else
                 {
@@ -596,7 +592,7 @@ class Party
                 }
                 else
                 {
-                    this.GoTo(Party.Monsters[(int)urgentTarget]);
+                    this.GoTo(Party.Monsters![(int)urgentTarget]);
                 }
             }
             else
@@ -605,7 +601,7 @@ class Party
 
                 if (targetInMyScope != null)
                 {
-                    this.GoTo(Party.Monsters[(int)targetInMyScope]);
+                    this.GoTo(Party.Monsters![(int)targetInMyScope]);
                 }
                 else
                 {
@@ -667,7 +663,7 @@ class Party
                 }
                 else
                 {
-                    this.GoTo(Party.Monsters[(int)urgentTarget]);
+                    this.GoTo(Party.Monsters![(int)urgentTarget]);
                 }
             }
             else
@@ -676,7 +672,7 @@ class Party
 
                 if (targetInMyScope != null)
                 {
-                    this.GoTo(Party.Monsters[(int)targetInMyScope]);
+                    this.GoTo(Party.Monsters![(int)targetInMyScope]);
                 }
                 else
                 {
@@ -709,7 +705,7 @@ class Party
     static void Main(string[] args)
     {
         string[] inputs;
-        inputs = Console.ReadLine().Split(' ');
+        inputs = Console.ReadLine()!.Split(' ');
 
         int baseX = int.Parse(inputs[0]);
         int baseY = int.Parse(inputs[1]);
@@ -725,7 +721,7 @@ class Party
             Party.OppBase = new Complex(0, 0);
         }
 
-        int heroesPerPlayer = int.Parse(Console.ReadLine());
+        int heroesPerPlayer = int.Parse(Console.ReadLine()!);
 
         Party.MyHeroes = new List<MyHero>(heroesPerPlayer);
         Party.Turn = 0;
@@ -735,15 +731,15 @@ class Party
         {
             Party.AddTurn();
 
-            inputs = Console.ReadLine().Split(' ');
+            inputs = Console.ReadLine()!.Split(' ');
             Party.MyHealth = int.Parse(inputs[0]);
             Party.MyMana = int.Parse(inputs[1]);
 
-            inputs = Console.ReadLine().Split(' ');
+            inputs = Console.ReadLine()!.Split(' ');
             Party.OppHealth = int.Parse(inputs[0]);
             Party.OppMana = int.Parse(inputs[1]);
 
-            int entityCount = int.Parse(Console.ReadLine());
+            int entityCount = int.Parse(Console.ReadLine()!);
 
             Party.OppHeroes = new List<OppHero>(entityCount);
             Party.Monsters = new List<Monster>(entityCount);
@@ -752,7 +748,7 @@ class Party
 
             for (int i = 0; i < entityCount; i++)
             {
-                inputs = Console.ReadLine().Split(' ');
+                inputs = Console.ReadLine()!.Split(' ');
                 int id = int.Parse(inputs[0]); // Unique identifier
                 int type = int.Parse(inputs[1]); // 0=monster, 1=your heroIndex, 2=opponent heroIndex
                 int x = int.Parse(inputs[2]); // Position of this entity
@@ -805,8 +801,6 @@ class Party
             {
                 Party.MyHeroes[i].Action();
             }
-            // Write an action using Console.WriteLine()
-            // To debug: Console.Error.WriteLine("Debug messages...");
         }
     }
 }
