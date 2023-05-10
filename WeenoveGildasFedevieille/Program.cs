@@ -25,7 +25,7 @@ class Party
 
     private const int MIDDLE_MAGNITUDE = 9897;
 
-    private static int EXPLORATION_MAGNITUDE = 8200;
+    private static int EXPLORATION_MAGNITUDE = 6000;
     private const double PIXEL_SCOPE = 2200;
     private static double RADIAN_SCOPE = Math.Asin(PIXEL_SCOPE / EXPLORATION_MAGNITUDE);
     private const double HERO_SPEED = 800;
@@ -42,6 +42,7 @@ class Party
     static private int OppHealth;
     static private int Turn { get; set; }
     static private bool OpponentUseControlOnMyDefenders { get; set; }
+    static private bool OpponentUseControlOnAttacker { get; set; }
     static private Complex MyBase { get; set; }
     static private Complex OppBase { get; set; }
 
@@ -63,7 +64,7 @@ class Party
 
         if (Party.Turn == ATTACK_TURN)
         {
-            UpdateExplorationMagnitude(6000);
+            Party.UpdateExplorationMagnitude(6000);
         }
     }
 
@@ -565,27 +566,11 @@ class Party
             }
         }
 
-        public override void Update(Complex position, int shieldLife, bool isControlled)
-        {
-            this.Position = position;
-            this.ShieldLife = shieldLife;
-            this.IsControlled = isControlled;
-
-            if (Party.Turn > ATTACK_TURN && !Party.OpponentUseControlOnMyDefenders && this.IsControlled)
-            {
-                Party.OpponentUseControlOnMyDefenders = true;
-            }
-        }
-
         public override void Action()
         {
             int? urgentTarget = Party.GetUrgentTarget(MY_HERO2);
 
-            if (MustShieldMe())
-            {
-                this.Shield(this.Id);
-            }
-            else if (urgentTarget != null)
+            if (urgentTarget != null)
             {
                 if (this.MustDefenseWind((int)urgentTarget))
                 {
@@ -610,11 +595,6 @@ class Party
                     this.DefenseExplore();
                 }
             }
-        }
-
-        private bool MustShieldMe()
-        {
-            return Party.OpponentUseControlOnMyDefenders && this.ShieldLife <= 1;
         }
     }
 
@@ -636,27 +616,11 @@ class Party
             }
         }
 
-        public override void Update(Complex position, int shieldLife, bool isControlled)
-        {
-            this.Position = position;
-            this.ShieldLife = shieldLife;
-            this.IsControlled = isControlled;
-
-            if (Party.Turn > ATTACK_TURN && !Party.OpponentUseControlOnMyDefenders && this.IsControlled)
-            {
-                Party.OpponentUseControlOnMyDefenders = true;
-            }
-        }
-
         public override void Action()
         {
             int? urgentTarget = Party.GetUrgentTarget(MY_HERO3);
 
-            if (MustShieldMe())
-            {
-                this.Shield(this.Id);
-            }
-            else if (urgentTarget != null)
+            if (urgentTarget != null)
             {
                 if (this.MustDefenseWind((int)urgentTarget))
                 {
@@ -681,11 +645,6 @@ class Party
                     this.DefenseExplore();
                 }
             }
-        }
-
-        private bool MustShieldMe()
-        {
-            return Party.OpponentUseControlOnMyDefenders && this.ShieldLife <= 1;
         }
     }
 
