@@ -36,13 +36,13 @@ class Party
     /*__________________________ATTRIBUTS_________________________*/
     /*____________________________________________________________*/
 
-    private static int MyMana { get; set; }
+    private static int MyMana;
     private static int MyHealth;
     private static int OppMana;
     private static int OppHealth;
-    private static int Turn { get; set; }
-    private static Complex MyBase { get; set; }
-    private static Complex OppBase { get; set; }
+    private static int Turn;
+    private static Complex MyBase;
+    private static Complex OppBase;
 
     private static List<Monster>? Monsters;
     private static List<MyHero>? MyHeroes;
