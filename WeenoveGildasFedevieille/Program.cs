@@ -36,23 +36,21 @@ class Party
     /*__________________________ATTRIBUTS_________________________*/
     /*____________________________________________________________*/
 
-    static private int MyMana { get; set; }
-    static private int MyHealth;
-    static private int OppMana;
-    static private int OppHealth;
-    static private int Turn { get; set; }
-    static private bool OpponentUseControlOnMyDefenders { get; set; }
-    static private bool OpponentUseControlOnAttacker { get; set; }
-    static private Complex MyBase { get; set; }
-    static private Complex OppBase { get; set; }
+    private static int MyMana { get; set; }
+    private static int MyHealth;
+    private static int OppMana;
+    private static int OppHealth;
+    private static int Turn { get; set; }
+    private static Complex MyBase { get; set; }
+    private static Complex OppBase { get; set; }
 
-    static private List<Monster>? Monsters;
-    static private List<MyHero>? MyHeroes;
-    static private List<OppHero>? OppHeroes;
+    private static List<Monster>? Monsters;
+    private static List<MyHero>? MyHeroes;
+    private static List<OppHero>? OppHeroes;
 
-    static private List<int?>? UrgentTargetRoutes;
+    private static List<int?>? UrgentTargetRoutes;
 
-    static private int LastUrgentTargetUpdate = 0;
+    private static int LastUrgentTargetUpdate = 0;
 
     /*____________________________________________________________*/
     /*___________________________METHODES_________________________*/
